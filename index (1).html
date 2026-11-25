@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SYS // _kun4l_x7</title>
+  <style>
+    :root {
+      --bg: #07080d;
+      --surface: rgba(15, 18, 28, 0.78);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-glow: rgba(125, 211, 252, 0.35);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --gold: #facc15;
+      --saffron: #fb923c;
+      --green: #4ade80;
+      --mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 48px;
+      position: relative;
+    }
+
+    #starfield {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      transition: border-color 0.25s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-glow);
+    }
+
+    /* Status Pill */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--green);
+    }
+
+    .status-dot::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    /* Header / ASCII */
+    .hero {
+      text-align: center;
+      padding: 22px 18px;
+    }
+
+    .ascii-art {
+      font-family: var(--mono);
+      font-size: 17px;
+      line-height: 1.35;
+      color: #fde047;
+      margin-bottom: 12px;
+      user-select: none;
+    }
+
+    .handle {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .callsign {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 4px;
+      letter-spacing: 0.1em;
+    }
+
+    /* Section Label */
+    .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Coordinate Grid */
+    .coord-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .coord-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-decoration: none;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .coord-item:hover {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: var(--border-glow);
+    }
+
+    .coord-main {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .coord-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .coord-val {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .coord-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--accent);
+    }
+
+    /* Thala Highlight Card */
+    .thala-card {
+      background: linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(15, 18, 28, 0.85));
+      border-color: rgba(250, 204, 21, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .thala-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .thala-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .jersey-num {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold);
+      text-shadow: 0 0 18px rgba(250, 204, 21, 0.35);
+    }
+
+    /* Ambient Synth & Ping */
+    .controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .btn.active {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(74, 222, 128, 0.1);
+    }
+
+    /* Ping Input */
+    .ping-box {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .ping-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+    }
+
+    .ping-input:focus {
+      border-color: var(--accent);
+    }
+
+    .ping-feed {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 110px;
+      overflow-y: auto;
+    }
+
+    .ping-entry {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 7px 10px;
+      border-radius: 8px;
+      border-left: 2px solid var(--accent);
+    }
+
+    /* Instagram CTA */
+    .ig-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+      background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af);
+      box-shadow: 0 8px 24px rgba(221, 42, 123, 0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ig-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(221, 42, 123, 0.45);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      border: 1px solid var(--accent);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 10;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield"></canvas>
+
+  <main class="container">
+    <!-- Top Telemetry Bar -->
+    <div class="card status-bar">
+      <span class="status-dot">SYS ONLINE</span>
+      <span>DEL // 08.12</span>
+    </div>
+
+    <!-- Identity Card -->
+    <section class="card hero">
+      <div class="ascii-art">⭕!⭕<br />└┘. └┘ .┘——┼🌸</div>
+      <div class="handle">Kunal_7</div>
+      <div class="callsign">FPV.08 × NO.07 🐚</div>
+    </section>
+
+    <!-- Coordinates & Destinations -->
+    <section class="card">
+      <div class="label">
+        <span>TELEMETRY & WAYPOINTS</span>
+        <span>TAP TO ENGAGE</span>
+      </div>
+      <div class="coord-list">
+        <div class="coord-item" onclick="copyGrid('G6RQ+26X')">
+          <div class="coord-main">
+            <span class="coord-tag">LOCAL SECTOR // NEW DELHI</span>
+            <span class="coord-val">G6RQ+26X 📍</span>
+          </div>
+          <span class="coord-badge">COPY</span>
+        </div>
+
+        <a class="coord-item" href="https://maps.google.com/?q=23.1828,75.7682" target="_blank" rel="noopener">
+          <div class="coord-main">
+            <span class="coord-tag">SHRI MAHAKALESHWAR // UJJAIN</span>
+            <span class="coord-val">23.1828° N, 75.7682° E 🔱</span>
+          </div>
+          <span class="coord-badge">MAPS ↗</span>
+        </a>
+
+        <div class="coord-item" onclick="triggerWarp()">
+          <div class="coord-main">
+            <span class="coord-tag">DREAM DESTINATION // M31 ANDROMEDA</span>
+            <span class="coord-val">𝗥𝗔 𝟬𝟬𝗵 𝟰𝟮𝗺 | +𝟰𝟭° ✨</span>
+          </div>
+          <span class="coord-badge" id="warpBadge">WARP</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Thala Highlight -->
+    <section class="card thala-card">
+      <div>
+        <div class="thala-title">Thala for a reason 💛</div>
+        <div class="thala-sub">FINISHER PROTOCOL // LEGACY</div>
+      </div>
+      <div class="jersey-num">07</div>
+    </section>
+
+    <!-- Interactive Audio & Track Ping -->
+    <section class="card">
+      <div class="label">
+        <span>COMMS & AUDIO</span>
+        <span id="audioState">IDLE</span>
+      </div>
+      <div class="controls-row">
+        <button class="btn" id="synthBtn" onclick="toggleSynth()">▶ HELI-7 PULSE</button>
+        <button class="btn" onclick="triggerWarp()">✦ STAR WARP</button>
+      </div>
+
+      <div class="ping-box">
+        <input type="text" id="pingInput" class="ping-input" placeholder="Drop a track or message..." maxlength="60" />
+        <button class="btn" onclick="addPing()">SEND</button>
+      </div>
+      <div class="ping-feed" id="pingFeed">
+        <div class="ping-entry">[SYS] Signal locked on G6RQ+26X.</div>
+      </div>
+    </section>
+
+    <!-- Instagram Redirect -->
+    <a class="ig-btn" id="igLink" href="https://www.instagram.com/_kun4l_x7/" onclick="openInstagram(event)">
+      OPEN INSTAGRAM // @_kun4l_x7 ↗
+    </a>
+  </main>
+
+  <div class="toast" id="toast">Copied to clipboard</div>
+
+  <script>
+    // Interactive Andromeda Starfield
+    const canvas = document.getElementById("starfield");
+    const ctx = canvas.getContext("2d");
+    let width, height, stars = [];
+    let warpSpeed = 0.35;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    for (let i = 0; i < 140; i++) {
+      stars.push({
+        x: Math.random() * width - width / 2,
+        y: Math.random() * height - height / 2,
+        z: Math.random() * width
+      });
+    }
+
+    function animateStars() {
+      ctx.fillStyle = "rgba(7, 8, 13, 0.35)";
+      ctx.fillRect(0, 0, width, height);
+
+      for (let s of stars) {
+        s.z -= warpSpeed * 8;
+        if (s.z <= 1) {
+          s.z = width;
+          s.x = Math.random() * width - width / 2;
+          s.y = Math.random() * height - height / 2;
+        }
+        const k = 128.0 / s.z;
+        const px = s.x * k + width / 2;
+        const py = s.y * k + height / 2;
+
+        if (px >= 0 && px <= width && py >= 0 && py <= height) {
+          const size = (1 - s.z / width) * 2.2;
+          ctx.fillStyle = warpSpeed > 1 ? "#38bdf8" : "#e2e8f0";
+          ctx.beginPath();
+          ctx.arc(px, py, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(animateStars);
+    }
+    animateStars();
+
+    function triggerWarp() {
+      warpSpeed = 3.2;
+      document.getElementById("warpBadge").textContent = "ACTIVE";
+      showToast("Engaging Andromeda warp vector...");
+      setTimeout(() => {
+        warpSpeed = 0.35;
+        document.getElementById("warpBadge").textContent = "WARP";
+      }, 2400);
+    }
+
+    function copyGrid(text) {
+      navigator.clipboard.writeText(text);
+      showToast("Copied grid: " + text);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    // Minimal Web Audio Pulse
+    let audioCtx = null;
+    let osc = null;
+    let isPlaying = false;
+
+    function toggleSynth() {
+      const btn = document.getElementById("synthBtn");
+      const state = document.getElementById("audioState");
+      if (!isPlaying) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(110, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        isPlaying = true;
+        btn.classList.add("active");
+        btn.textContent = "■ STOP PULSE";
+        state.textContent = "TX ACTIVE";
+      } else {
+        osc.stop();
+        audioCtx.close();
+        isPlaying = false;
+        btn.classList.remove("active");
+        btn.textContent = "▶ HELI-7 PULSE";
+        state.textContent = "IDLE";
+      }
+    }
+
+    function addPing() {
+      const input = document.getElementById("pingInput");
+      const val = input.value.trim();
+      if (!val) return;
+      const feed = document.getElementById("pingFeed");
+      const item = document.createElement("div");
+      item.className = "ping-entry";
+      item.textContent = "[PING] " + val;
+      feed.prepend(item);
+      input.value = "";
+      showToast("Signal logged");
+    }
+
+    function openInstagram(e) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+        e.preventDefault();
+        window.location.href = "instagram://user?username=_kun4l_x7";
+        setTimeout(() => {
+          window.location.href = "https://www.instagram.com/_kun4l_x7/";
+        }, 700);
+      }
+    }
+  </script>
+</body>
+</html>
